@@ -199,6 +199,88 @@ BarWidget {
       }
 
       Row {
+        id: progressRow
+        width: parent.width
+        spacing: Style.space(8)
+        visible: root.activePlayer && root.activePlayer.length > 0
+
+        property real currentPosition: root.activePlayer ? root.activePlayer.position : 0
+
+        Timer {
+          interval: 1000
+          running: root.activePlayer && root.activePlayer.isPlaying && root.popupOpen
+          repeat: true
+          onTriggered: {
+            if (root.activePlayer) progressRow.currentPosition = root.activePlayer.position
+          }
+        }
+
+        Connections {
+          target: root.activePlayer
+          ignoreUnknownSignals: true
+          function onPositionChanged() { progressRow.currentPosition = root.activePlayer.position }
+          function onIsPlayingChanged() { if (root.activePlayer) progressRow.currentPosition = root.activePlayer.position }
+        }
+
+        function formatTime(val) {
+          var seconds = val;
+          if (val > 500000) seconds = val / 1000000;
+          if (!seconds || isNaN(seconds)) return "0:00"
+          seconds = Math.floor(seconds)
+          var min = Math.floor(seconds / 60)
+          var sec = seconds % 60
+          return min + ":" + (sec < 10 ? "0" : "") + sec
+        }
+
+        Text {
+          id: posText
+          textFormat: Text.PlainText
+          text: progressRow.formatTime(progressRow.currentPosition)
+          color: Qt.darker(root.bar.foreground, 1.2)
+          font.family: root.bar.fontFamily
+          font.pixelSize: Style.font.caption
+          anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Item {
+          width: parent.width - posText.implicitWidth - lenText.implicitWidth - Style.space(16)
+          height: Style.space(4)
+          anchors.verticalCenter: parent.verticalCenter
+
+          Rectangle {
+            anchors.fill: parent
+            radius: height / 2
+            color: Qt.alpha(root.bar.foreground, 0.2)
+
+            Rectangle {
+              height: parent.height
+              radius: height / 2
+              color: root.bar.foreground
+              width: {
+                if (!root.activePlayer || !root.activePlayer.length) return 0;
+                var p = progressRow.currentPosition;
+                if (p > 500000) p = p / 1000000;
+                var l = root.activePlayer.length;
+                if (l > 500000) l = l / 1000000;
+                var ratio = l > 0 ? (p / l) : 0;
+                return Math.max(0, Math.min(1, ratio)) * parent.width;
+              }
+            }
+          }
+        }
+
+        Text {
+          id: lenText
+          textFormat: Text.PlainText
+          text: progressRow.formatTime(root.activePlayer ? root.activePlayer.length : 0)
+          color: Qt.darker(root.bar.foreground, 1.2)
+          font.family: root.bar.fontFamily
+          font.pixelSize: Style.font.caption
+          anchors.verticalCenter: parent.verticalCenter
+        }
+      }
+
+      Row {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: Style.space(6)
 
