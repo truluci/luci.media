@@ -267,6 +267,50 @@ BarWidget {
               }
             }
           }
+
+          MouseArea {
+            anchors.centerIn: parent
+            width: parent.width
+            height: Math.max(parent.height + Style.space(12), 24)
+            cursorShape: Qt.PointingHandCursor
+            
+            onClicked: function(mouse) {
+              if (!root.activePlayer || !root.activePlayer.length || root.activePlayer.canSeek === false) return;
+              
+              var ratio = Math.max(0, Math.min(1, mouse.x / width));
+              var l = root.activePlayer.length;
+              var p = progressRow.currentPosition;
+              
+              var target = ratio * l;
+              var offset = target - p;
+              
+              var handled = false;
+              
+              // 1. Try property assignment (some wrappers map this to DBus SetPosition)
+              try {
+                var oldPos = root.activePlayer.position;
+                root.activePlayer.position = target;
+                if (root.activePlayer.position !== oldPos) handled = true;
+              } catch(e) {}
+              
+              // 2. Try explicit setPosition method (uses TrackId + microseconds usually)
+              if (!handled && root.activePlayer.trackId && typeof root.activePlayer.setPosition === "function") {
+                try {
+                  var target_usec = l < 500000 ? target * 1000000 : target;
+                  root.activePlayer.setPosition(root.activePlayer.trackId, target_usec);
+                  handled = true;
+                } catch(e) {}
+              }
+              
+              // 3. Fallback to relative seek (works for native apps like Spotify)
+              if (!handled && typeof root.activePlayer.seek === "function") {
+                root.activePlayer.seek(offset);
+              }
+              
+              // Optimistically update UI
+              progressRow.currentPosition = target;
+            }
+          }
         }
 
         Text {
