@@ -117,6 +117,7 @@ Item {
       if (playerStartedAt[key] === undefined) {
         serial += 1
         next[key] = serial
+        if (hasMetadata(p)) preferredPlayerKey = key
       } else {
         next[key] = playerStartedAt[key]
       }
@@ -225,7 +226,7 @@ Item {
       }
     }
 
-    if (preferred && preferred.isPlaying) return preferred
+    if (preferred) return preferred
     var streamCandidate = streamPlayer || streamProxy
     var streamPreferred = preferred && playerHasPlaybackStream(preferred) ? preferred : null
     return oldestPlayingPlayer(true) || oldestPlayingPlayer(false) || streamPreferred || streamCandidate || preferred || trackPlayer || trackProxy || controllablePlayer || controllableProxy || identityPlayer || identityProxy || null
