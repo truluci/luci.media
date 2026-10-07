@@ -2,6 +2,9 @@
 
 This is an Omarchy plugin that provides an MPRIS media control service and an interactive bar widget to control your currently playing media. It integrates with MPRIS and Pipewire to smoothly track active media players and audio streams.
 
+<img width="482" height="287" alt="image" src="https://github.com/user-attachments/assets/f042f7b8-2e4b-4d7c-b605-e966ef40c661" />
+
+
 ## Features
 
 - **Media Control Service:** Tracks running MPRIS players, proxies, and audio streams, correctly selecting the active player based on playing state and history.
